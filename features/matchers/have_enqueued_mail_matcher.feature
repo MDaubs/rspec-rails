@@ -38,3 +38,20 @@ Feature: have_enqueued_mail matcher
       """
     When I run `rspec spec/mailers/user_mailer_spec.rb`
     Then the examples should all pass
+
+  Scenario: Checking mailer parameters and arguments (Rails 5.1+)
+    Given a file named "spec/mailers/user_mailer_spec.rb" with:
+      """ruby
+      require "rails_helper"
+
+      RSpec.describe NotificationsMailer do
+        it "matches with enqueued mailer" do
+          ActiveJob::Base.queue_adapter = :test
+          expect {
+            NotificationsMailer.with(user: "user parameter").signup("argument").deliver_later
+          }.to have_enqueued_mail(NotificationsMailer, :signup).with(params: { user: "user parameter" }, args: ["argument"])
+        end
+      end
+      """
+    When I run `rspec spec/mailers/user_mailer_spec.rb`
+    Then the examples should all pass
